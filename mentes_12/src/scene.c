@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <GL/gl.h>
+#include <SDL2/SDL_image.h>
 
 /* Festményfájlok listája – könnyen bővíthető */
 static const char* PAINTING_FILES[PAINTING_COUNT] = {
@@ -31,6 +32,26 @@ static const char* PAINTING_FILES[PAINTING_COUNT] = {
     "assets/textures/meme19.jpg",
     "assets/textures/meme20.jpg"
 };
+
+static float get_image_aspect_or_default(const char* filename)
+{
+    SDL_Surface* surface = IMG_Load(filename);
+    if (surface == NULL || surface->h == 0) {
+        if (surface != NULL) {
+            SDL_FreeSurface(surface);
+        }
+        return 4.0f / 3.0f;
+    }
+
+    {
+        float aspect = (float)surface->w / (float)surface->h;
+        SDL_FreeSurface(surface);
+        if (aspect < 0.1f) {
+            return 4.0f / 3.0f;
+        }
+        return aspect;
+    }
+}
 
 void init_scene(Scene* scene)
 {
@@ -71,10 +92,11 @@ void init_scene(Scene* scene)
 
     /* Festmények – tömbbel */
     for (int i = 0; i < PAINTING_COUNT; i++) {
-        scene->painting_textures[i] = load_texture((char*)PAINTING_FILES[i]);
+        scene->painting_textures[i] = load_texture_with_wrap((char*)PAINTING_FILES[i], GL_CLAMP_TO_EDGE);
+        scene->painting_aspects[i] = get_image_aspect_or_default(PAINTING_FILES[i]);
     }
 
-    scene->help_texture = load_texture("assets/textures/help.png");
+    scene->help_texture = load_texture_with_wrap("assets/textures/help.png", GL_CLAMP_TO_EDGE);
     if (scene->help_texture == 0)
         printf("[HIBA] Nem sikerult betolteni a help.png-t!\n");
     else

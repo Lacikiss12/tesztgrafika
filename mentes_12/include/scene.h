@@ -28,6 +28,7 @@ typedef struct Scene
 
     /* Festmények tömbként – sokkal karbantarthatóbb */
     GLuint painting_textures[PAINTING_COUNT];
+    float painting_aspects[PAINTING_COUNT];
 
     GLuint help_texture;
 

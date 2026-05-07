@@ -113,12 +113,33 @@ static void draw_one_painting(GLuint tex,
     draw_painting_frame(ax, ay, az, bx, by, bz, nx, ny, nz);
 }
 
+static void fit_painting_size(float aspect, float max_width, float max_height, float* out_width, float* out_height)
+{
+    float width = max_width;
+    float height;
+
+    if (aspect < 0.1f) {
+        aspect = 4.0f / 3.0f;
+    }
+
+    height = width / aspect;
+    if (height > max_height) {
+        height = max_height;
+        width = height * aspect;
+    }
+
+    *out_width = width;
+    *out_height = height;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Összes festmény kirajzolása (4 fal, egyenletesen elosztva)        */
 /* ------------------------------------------------------------------ */
 void draw_paintings(const Scene* scene)
 {
     int idx = 0;
+    const float max_slot_width = 4.0f;
+    const float max_slot_height = 3.0f;
 
     /* ---- HÁTSÓ FAL  (Y = +19.95, normál: (0,-1,0)) ---- */
     /* 5 kép vízszintesen */
@@ -130,9 +151,15 @@ void draw_paintings(const Scene* scene)
         { 14.0f,  18.0f}
     };
     for (int i = 0; i < 5 && idx < PAINTING_COUNT; i++, idx++) {
+        float cx = (back_xs[i][0] + back_xs[i][1]) * 0.5f;
+        float cy = 19.95f;
+        float cz = 2.5f;
+        float width;
+        float height;
+        fit_painting_size(scene->painting_aspects[idx], max_slot_width, max_slot_height, &width, &height);
         draw_one_painting(scene->painting_textures[idx],
-            back_xs[i][0], 19.95f, 1.0f,
-            back_xs[i][1], 19.95f, 4.0f,
+            cx - width * 0.5f, cy, cz - height * 0.5f,
+            cx + width * 0.5f, cy, cz + height * 0.5f,
             0.0f, -1.0f, 0.0f);
     }
 
@@ -146,17 +173,16 @@ void draw_paintings(const Scene* scene)
         { 14.0f,  18.0f}
     };
     for (int i = 0; i < 5 && idx < PAINTING_COUNT; i++, idx++) {
-        glBindTexture(GL_TEXTURE_2D, scene->painting_textures[idx]);
-        glBegin(GL_QUADS);
-            glNormal3f(1.0f, 0.0f, 0.0f);
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(-19.95f, left_ys[i][0], 1.0f);
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(-19.95f, left_ys[i][1], 1.0f);
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(-19.95f, left_ys[i][1], 4.0f);
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(-19.95f, left_ys[i][0], 4.0f);
-        glEnd();
-        draw_painting_frame(-19.95f, left_ys[i][0], 1.0f,
-                            -19.95f, left_ys[i][1], 4.0f,
-                            1.0f, 0.0f, 0.0f);
+        float cx = -19.95f;
+        float cy = (left_ys[i][0] + left_ys[i][1]) * 0.5f;
+        float cz = 2.5f;
+        float width;
+        float height;
+        fit_painting_size(scene->painting_aspects[idx], max_slot_width, max_slot_height, &width, &height);
+        draw_one_painting(scene->painting_textures[idx],
+                          cx, cy - width * 0.5f, cz - height * 0.5f,
+                          cx, cy + width * 0.5f, cz + height * 0.5f,
+                          1.0f, 0.0f, 0.0f);
     }
 
     /* ---- JOBB FAL  (X = +19.95, normál: (-1,0,0)) ---- */
@@ -168,18 +194,16 @@ void draw_paintings(const Scene* scene)
         { 14.0f,  18.0f}
     };
     for (int i = 0; i < 5 && idx < PAINTING_COUNT; i++, idx++) {
-        glBindTexture(GL_TEXTURE_2D, scene->painting_textures[idx]);
-        glBegin(GL_QUADS);
-            glNormal3f(-1.0f, 0.0f, 0.0f);
-            /* Fordított sorrend, hogy ne legyen tükrözve */
-            glTexCoord2f(0.0f, 1.0f); glVertex3f(19.95f, right_ys[i][1], 1.0f);
-            glTexCoord2f(1.0f, 1.0f); glVertex3f(19.95f, right_ys[i][0], 1.0f);
-            glTexCoord2f(1.0f, 0.0f); glVertex3f(19.95f, right_ys[i][0], 4.0f);
-            glTexCoord2f(0.0f, 0.0f); glVertex3f(19.95f, right_ys[i][1], 4.0f);
-        glEnd();
-        draw_painting_frame(19.95f, right_ys[i][0], 1.0f,
-                            19.95f, right_ys[i][1], 4.0f,
-                            -1.0f, 0.0f, 0.0f);
+        float cx = 19.95f;
+        float cy = (right_ys[i][0] + right_ys[i][1]) * 0.5f;
+        float cz = 2.5f;
+        float width;
+        float height;
+        fit_painting_size(scene->painting_aspects[idx], max_slot_width, max_slot_height, &width, &height);
+        draw_one_painting(scene->painting_textures[idx],
+                          cx, cy - width * 0.5f, cz - height * 0.5f,
+                          cx, cy + width * 0.5f, cz + height * 0.5f,
+                          -1.0f, 0.0f, 0.0f);
     }
 
     /* ---- ELÜLSŐ FAL  (Y = -19.95, normál: (0,1,0)) ---- */
@@ -191,18 +215,16 @@ void draw_paintings(const Scene* scene)
         { 14.0f,  18.0f}
     };
     for (int i = 0; i < 5 && idx < PAINTING_COUNT; i++, idx++) {
-        glBindTexture(GL_TEXTURE_2D, scene->painting_textures[idx]);
-        glBegin(GL_QUADS);
-            glNormal3f(0.0f, 1.0f, 0.0f);
-            /* Fordított sorrend */
-            glTexCoord2f(0.0f, 1.0f); glVertex3f( front_xs[i][1], -19.95f, 1.0f);
-            glTexCoord2f(1.0f, 1.0f); glVertex3f( front_xs[i][0], -19.95f, 1.0f);
-            glTexCoord2f(1.0f, 0.0f); glVertex3f( front_xs[i][0], -19.95f, 4.0f);
-            glTexCoord2f(0.0f, 0.0f); glVertex3f( front_xs[i][1], -19.95f, 4.0f);
-        glEnd();
-        draw_painting_frame(front_xs[i][0], -19.95f, 1.0f,
-                            front_xs[i][1], -19.95f, 4.0f,
-                            0.0f, 1.0f, 0.0f);
+        float cx = (front_xs[i][0] + front_xs[i][1]) * 0.5f;
+        float cy = -19.95f;
+        float cz = 2.5f;
+        float width;
+        float height;
+        fit_painting_size(scene->painting_aspects[idx], max_slot_width, max_slot_height, &width, &height);
+        draw_one_painting(scene->painting_textures[idx],
+                          cx - width * 0.5f, cy, cz - height * 0.5f,
+                          cx + width * 0.5f, cy, cz + height * 0.5f,
+                          0.0f, 1.0f, 0.0f);
     }
 }
 

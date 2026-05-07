@@ -65,7 +65,7 @@ void reshape(int width, int height)
     glViewport(x, y, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, 0.01, 1000.0);
+    gluPerspective(VIEWPORT_ASPECT, VIEWPORT_RATIO, VIEWPORT_NEAR, VIEWPORT_FAR);
 }
 
 void handle_app_events(App* app)

@@ -7,6 +7,8 @@
 
 #define VIEWPORT_RATIO (16.0 / 9.0)
 #define VIEWPORT_ASPECT 50.0
+#define VIEWPORT_NEAR 0.5
+#define VIEWPORT_FAR 120.0
 
 typedef struct App {
     SDL_Window*   window;
